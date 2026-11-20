@@ -110,8 +110,8 @@ after a newer request has started is dropped (sequence guard). The native networ
 abort, so this guard replaces request cancellation. Switching servers remounts the whole
 authenticated tree, so no rows from another server can appear. Plugin detection is cached in
 memory per server URL. Only a positive or negative answer is cached; if the manifest request
-fails (for example offline at startup), the Agenda row stays hidden until the channel list
-mounts again (server switch or app restart), and detection is retried then.
+fails (for example offline at startup), the Agenda tab stays hidden until the home tabs
+mount again (server switch or app restart), and detection is retried then.
 
 ## Verification
 

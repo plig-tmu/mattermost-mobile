@@ -6,7 +6,10 @@ import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import AgendaTabIcon from '@agenda/components/agenda_tab_icon';
+import {useAgendaEnabled} from '@agenda/hooks/use_agenda_enabled';
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useWindowDimensions} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -57,6 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const TabComponents: Record<string, any> = {
     [Screens.ACCOUNT]: Account,
+    [Screens.AGENDA]: AgendaTabIcon,
     [Screens.CHANNEL_LIST]: Home,
     [Screens.MENTIONS]: Mentions,
     [Screens.SAVED_MESSAGES]: SavedMessages,
@@ -66,8 +70,12 @@ const TabComponents: Record<string, any> = {
 function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {theme: Theme}) {
     const [visible, setVisible] = useState<boolean|undefined>();
     const {width} = useWindowDimensions();
-    const tabs = useMemo(() => state.routes.filter((route) => route.name !== 'index'), [state.routes]);
+    const serverUrl = useServerUrl();
+    const agendaEnabled = useAgendaEnabled(serverUrl);
+    const tabs = useMemo(() => state.routes.filter((route) => route.name !== 'index' && (agendaEnabled || route.name !== Screens.AGENDA)), [state.routes, agendaEnabled]);
     const tabWidth = width / tabs.length;
+    const focusedKey = state.routes[state.index]?.key;
+    const focusedIndex = Math.max(0, tabs.findIndex((r) => r.key === focusedKey));
     const style = getStyleSheet(theme);
     const safeareaInsets = useSafeAreaInsets();
 
@@ -112,11 +120,11 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     }, [navigation, state]);
 
     const transform = useAnimatedStyle(() => {
-        const translateX = withTiming(state.index * tabWidth, {duration: 150});
+        const translateX = withTiming(focusedIndex * tabWidth, {duration: 150});
         return {
             transform: [{translateX}],
         };
-    }, [state.index, tabWidth]);
+    }, [focusedIndex, tabWidth]);
 
     const animatedStyle = useAnimatedStyle(() => {
         if (visible === undefined) {
@@ -145,7 +153,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                     {tabs.map((route, index) => {
                         const {options} = descriptors[route.key];
 
-                        const isFocused = state.index === index;
+                        const isFocused = focusedIndex === index;
 
                         const onPress = () => {
                             const lastTab = state.history[state.history.length - 1];

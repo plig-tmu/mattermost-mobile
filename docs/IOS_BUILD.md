@@ -118,7 +118,7 @@ match or env vars (see `fastlane/env_vars_example`).
 
 1. Launch the app, enter your Mattermost server URL (11.7.0 or newer with the Agenda plugin
    enabled) and log in as usual.
-2. In the channel list, an **Agenda** row appears under Threads/Drafts once the app detects the
+2. An **Agenda** tab (calendar icon) appears in the bottom tab bar once the app detects the
    plugin (`/api/v4/plugins/webapp`). Tap it.
 3. Use **My / Team / Channel** to choose the scope, the **Calendar / Tasks / Agenda** tabs to
    switch views, and **+** to create an event or task.

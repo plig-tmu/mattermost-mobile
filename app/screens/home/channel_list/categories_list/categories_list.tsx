@@ -7,8 +7,6 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {handleTeamChange} from '@actions/remote/team';
-import AgendaButton from '@agenda/components/agenda_button';
-import {useAgendaEnabled} from '@agenda/hooks/use_agenda_enabled';
 import AgentsButton from '@agents/components/agents_button';
 import {ROW_HEIGHT} from '@components/channel_item/channel_item';
 import DraftsButton from '@components/drafts_buttton';
@@ -200,16 +198,13 @@ const CategoriesList = ({
         );
     }, [activeScreen, isTablet, lastChannelId, showPlaybooksButton]);
 
-    const agendaEnabled = useAgendaEnabled(serverUrl);
-    const agendaButtonComponent = useMemo(() => (agendaEnabled ? <AgendaButton key='agenda'/> : null), [agendaEnabled]);
-
     const onListLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
-        const items = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent, agendaButtonComponent].reduce((result, item) => {
+        const items = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent].reduce((result, item) => {
             return result + (Boolean(item) ? 1 : 0);
         }, 0);
         setListHeight(height - (items * ROW_HEIGHT));
-    }, [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent, agendaButtonComponent]);
+    }, [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent]);
 
     const content = useMemo(() => {
         if (!hasChannels && !isInitialSync) {
@@ -224,7 +219,7 @@ const CategoriesList = ({
             return (<LoadChannelsError/>);
         }
 
-        const components = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent, agendaButtonComponent,
+        const components = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent,
             <Categories
                 key='categories'
                 isTablet={isTablet}
@@ -248,7 +243,7 @@ const CategoriesList = ({
                 />
             </SafeAreaView>
         );
-    }, [agendaButtonComponent, agentsButtonComponent, draftsButtonComponent, hasChannels, isInitialSync, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isInitialSync, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

@@ -61,7 +61,6 @@
   "agenda.form.visibility.channel": "Channel",
   "agenda.form.visibility.private": "Only me",
   "agenda.form.visibility.team": "Team",
-  "agenda.home_button.title": "Agenda",
   "agenda.list.empty": "Nothing scheduled in the next four weeks",
   "agenda.list.retry": "Try again",
   "agenda.recurrence.daily": "{count, plural, one {Every day} other {Every # days}}",

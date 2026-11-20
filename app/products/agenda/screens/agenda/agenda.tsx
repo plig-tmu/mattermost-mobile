@@ -1,19 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessage, defineMessages, useIntl} from 'react-intl';
-import {Alert, Pressable, View} from 'react-native';
+import {Alert, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import ScopeBar from '@agenda/components/scope_bar';
-import CompassIcon from '@components/compass_icon';
+import NavigationHeader from '@components/navigation_header';
+import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
+import {useDefaultHeaderHeight} from '@hooks/header';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
 import Tabs from '@hooks/use_tabs/tabs';
 import {navigateToScreen} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import CalendarView from './calendar_view';
 import ListView from './list_view';
@@ -30,32 +33,23 @@ const TABS: Array<TabDefinition<AgendaTab>> = [
 ];
 
 const messages = defineMessages({
+    title: {id: 'agenda.title', defaultMessage: 'Agenda'},
     create: {id: 'agenda.create', defaultMessage: 'Create'},
     newEvent: {id: 'agenda.create.event', defaultMessage: 'New event'},
     newTask: {id: 'agenda.create.task', defaultMessage: 'New task'},
     cancel: {id: 'agenda.cancel', defaultMessage: 'Cancel'},
 });
 
-const HIT_SLOP = {top: 8, bottom: 8, left: 8, right: 8};
-
-const EDGES: Edge[] = ['bottom', 'left', 'right'];
+// The bottom tab bar owns the bottom inset; the header owns the top one.
+const EDGES: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
     },
-    tabs: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingRight: 16,
-    },
-    createIcon: {
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        fontSize: 24,
-    },
-    pressed: {
-        opacity: 0.72,
+    content: {
+        flex: 1,
     },
 }));
 
@@ -78,6 +72,9 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
     }, []);
 
     const intl = useIntl();
+    const headerHeight = useDefaultHeaderHeight();
+    useAndroidHomeTabBackHandler(Screens.AGENDA);
+
     const onCreate = useCallback(() => {
         const params = scope.kind === 'my' ? {} : {teamId: scope.teamId, channelId: scope.kind === 'channel' ? scope.channelId : undefined};
         Alert.alert(intl.formatMessage(messages.create), undefined, [
@@ -87,6 +84,14 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
         ]);
     }, [intl, scope]);
 
+    const rightButtons = useMemo(() => [{
+        iconName: 'plus' as const,
+        onPress: onCreate,
+        accessibilityLabel: intl.formatMessage(messages.create),
+        testID: 'agenda.create',
+    }], [intl, onCreate]);
+    const contentStyle = useMemo(() => [styles.content, {marginTop: headerHeight}], [styles.content, headerHeight]);
+
     const viewProps = {scope, onPressEvent, onPressTask, teammateNameDisplay};
 
     return (
@@ -95,30 +100,23 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
             style={styles.container}
             testID='agenda.screen'
         >
-            <ScopeBar
-                scope={scope}
-                defaultTeamId={currentTeamId}
-                onChange={setScope}
+            <NavigationHeader
+                showBackButton={false}
+                title={intl.formatMessage(messages.title)}
+                rightButtons={rightButtons}
             />
-            <View style={styles.tabs}>
+            <View style={contentStyle}>
+                <RoundedHeaderContext/>
+                <ScopeBar
+                    scope={scope}
+                    defaultTeamId={currentTeamId}
+                    onChange={setScope}
+                />
                 <Tabs {...tabsProps}/>
-                <Pressable
-                    onPress={onCreate}
-                    hitSlop={HIT_SLOP}
-                    style={({pressed}) => pressed && styles.pressed}
-                    accessibilityRole='button'
-                    accessibilityLabel={intl.formatMessage(messages.create)}
-                    testID='agenda.create'
-                >
-                    <CompassIcon
-                        name='plus'
-                        style={styles.createIcon}
-                    />
-                </Pressable>
+                {tab === 'calendar' && <CalendarView {...viewProps}/>}
+                {tab === 'tasks' && <TasksView {...viewProps}/>}
+                {tab === 'list' && <ListView {...viewProps}/>}
             </View>
-            {tab === 'calendar' && <CalendarView {...viewProps}/>}
-            {tab === 'tasks' && <TasksView {...viewProps}/>}
-            {tab === 'list' && <ListView {...viewProps}/>}
         </SafeAreaView>
     );
 };

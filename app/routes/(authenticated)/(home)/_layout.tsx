@@ -72,6 +72,15 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name={Screens.AGENDA}
+                options={{
+                    title: 'Agenda',
+                    href: null,
+                    tabBarButtonTestID: 'tab_bar.agenda.tab',
+                    freezeOnBlur: true,
+                }}
+            />
+            <Tabs.Screen
                 name={Screens.ACCOUNT}
                 options={{
                     title: 'Account',
