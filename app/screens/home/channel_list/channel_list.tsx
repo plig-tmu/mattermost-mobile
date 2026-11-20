@@ -14,7 +14,6 @@ import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
-import FloatingActionButton from '@components/floating_action_button';
 import TeamSidebar from '@components/team_sidebar';
 import {Screens} from '@constants';
 import {HOME_TAB_SCREENS} from '@constants/screens';
@@ -70,8 +69,6 @@ let backPressTimeout: NodeJS.Timeout|undefined;
 // (near the time you will see the rate dialog) will show when switching
 // servers.
 let hasRendered = false;
-
-const openNewMessage = () => navigateToScreen(Screens.CREATE_DIRECT_MESSAGE);
 
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
@@ -223,14 +220,6 @@ const ChannelListScreen = (props: ChannelProps) => {
                     />
                     {isTablet && props.hasChannels &&
                     <AdditionalTabletView/>
-                    }
-                    {!isTablet && props.hasChannels &&
-                    <FloatingActionButton
-                        iconName='pencil-outline'
-                        onPress={openNewMessage}
-                        accessibilityLabel={intl.formatMessage({id: 'channel_list.new_message', defaultMessage: 'New message'})}
-                        testID='channel_list.new_message.button'
-                    />
                     }
                     {props.showIncomingCalls && !isTablet &&
                     <FloatingCallContainer

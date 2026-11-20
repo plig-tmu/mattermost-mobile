@@ -176,7 +176,7 @@ app/products/agenda/
   hooks/                  use_agenda_request (keyed loader + stale-response guard),
                           use_agenda_range (events+tasks of visible days), use_agenda_names,
                           use_agenda_enabled
-  components/             agenda_tab_icon, pill, calendar_grid (month and week), calendar_header,
+  components/             agenda_tab_icon, pill, circle_button, segmented_capsule, calendar_grid (month and week), calendar_header,
                           agenda_item_row, scope_bar, detail_parts, form_parts
   screens/                agenda (calendar/tasks/list views), task_details, event_details,
                           edit_task, edit_event
@@ -185,19 +185,26 @@ app/products/agenda/
 Route files are thin wrappers, as for Playbooks: the tab is `app/routes/(authenticated)/(home)/agenda.tsx`;
 details and editors are stack routes `app/routes/(authenticated)/agenda_*.tsx`.
 
-### Slack-style shell
+### Oxide-style shell
 
-The app shell and Agenda follow a Slack-like mobile layout. There is no design reference for
-"Mattermost Oxide" in the repo, so this is a best-effort interpretation:
+The tab bar and the Agenda tab follow the Mattermost Oxide design (reference: Oxide screenshots
+of the channel list and a channel, Nov 2026):
 
-- **Bottom tabs** show a label under each icon (Home, Search, Mentions, Saved, Agenda, Account) and a
-  tinted pill behind the selected icon instead of the old sliding bar.
-- **Home** has a floating **New message** button (phones) that opens Create Direct Message.
-- **Agenda tab:** a large title header with today's date as the subtitle, the rounded
-  `RoundedHeaderContext` top edge, scope and task filters as pills (`components/pill.tsx`),
-  rows with a leading tile (event color, or the task's completion toggle), bold day headers in
-  the list, and a floating **+** that opens a bottom sheet (New event / New task).
-  `useAndroidHomeTabBackHandler` handles the Android back button.
+- **Bottom tabs:** a floating capsule with Home, Activity (mentions), Saved, Agenda and You, each
+  with a label; the selected tab sits on a darker pill. Search is a separate round button next to
+  the capsule.
+- **Agenda tab:** a plain header (no colored band) with the title, today's date and a round
+  **+** button (`components/circle_button.tsx`) that opens a bottom sheet (New event / New
+  task). Scope and task filters are soft capsule pills (`components/pill.tsx`; the selected
+  one uses the accent color). Calendar / Tasks / Agenda is a segmented capsule
+  (`components/segmented_capsule.tsx`) shaped like the tab bar. The calendar header uses round
+  previous/next buttons and capsule Today / Week buttons. Rows have a leading tile (event
+  color, or the task's completion toggle). `useAndroidHomeTabBackHandler` handles the Android
+  back button, and the tab refetches when it regains focus.
+
+Not matched yet: Oxide shows the tab bar on pushed screens too (for example inside a channel),
+uses round header buttons on every screen (Agenda details and editors still use the stack
+header), and shows Threads / Drafts as tiles on Home.
 
 All colors come from the theme, so light, dark and custom themes apply.
 
@@ -207,10 +214,10 @@ All colors come from the theme, so light, dark and custom themes apply.
 3. `app/screens/home/tab_bar/index.tsx`: Agenda tab icon, hidden unless `useAgendaEnabled`; the
    selection highlight follows the focused tab's position among the visible tabs.
    `app/routes/(authenticated)/(home)/_layout.tsx`: the `Tabs.Screen` entry.
-4. Slack-style shell: `app/screens/home/tab_bar/index.tsx` (labels and pill highlight),
-   `app/constants/view.ts` (`BOTTOM_TAB_HEIGHT` 64), `app/constants/screens.ts` (Agenda in
-   `HOME_TAB_SCREENS`), `app/screens/home/channel_list/channel_list.tsx` (New message button) and
-   the new shared `app/components/floating_action_button/`.
+4. Oxide-style shell: `app/screens/home/tab_bar/index.tsx` (capsule, labels, separate search
+   button) and the tab icons' colors in `app/screens/home/tab_bar/*.tsx`,
+   `app/constants/view.ts` (`BOTTOM_TAB_HEIGHT` 72), `app/constants/screens.ts` (Agenda in
+   `HOME_TAB_SCREENS`).
 5. `tsconfig.json`, `babel.config.js`: `@agenda/*` alias; `eslint.config.mjs`: `@agenda` in the
    import-order path group.
 6. Route wrapper files (`app/routes/(authenticated)/agenda_*.tsx`, `(home)/agenda.tsx`) and `assets/base/i18n/en.json`

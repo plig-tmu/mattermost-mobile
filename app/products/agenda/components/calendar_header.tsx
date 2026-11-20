@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessages, useIntl} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CircleButton from '@agenda/components/circle_button';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -12,7 +13,12 @@ import {typography} from '@utils/typography';
 
 import type {CalendarMode} from '@agenda/utils/calendar';
 
-const HIT_SLOP = {top: 8, bottom: 8, left: 8, right: 8};
+const messages = defineMessages({
+    previous: {id: 'agenda.calendar.previous', defaultMessage: 'Previous'},
+    next: {id: 'agenda.calendar.next', defaultMessage: 'Next'},
+});
+
+const BUTTON_SIZE = 36;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -26,22 +32,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         ...typography('Heading', 200),
     },
-    iconButton: {
-        padding: 4,
-    },
-    icon: {
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        fontSize: 24,
+    gap: {
+        width: 8,
     },
     chip: {
-        borderRadius: 4,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
+        height: BUTTON_SIZE,
+        borderRadius: BUTTON_SIZE / 2,
+        paddingHorizontal: 12,
         marginLeft: 8,
-        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        justifyContent: 'center',
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
+        borderWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
     chipText: {
-        color: theme.buttonBg,
+        color: theme.centerChannelColor,
         ...typography('Body', 75, 'SemiBold'),
     },
     pressed: {
@@ -61,6 +66,7 @@ type Props = {
 const CalendarHeader = ({title, mode, onPrevious, onNext, onToday, onToggleMode}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
 
     return (
         <View style={styles.container}>
@@ -71,30 +77,21 @@ const CalendarHeader = ({title, mode, onPrevious, onNext, onToday, onToggleMode}
             >
                 {title}
             </Text>
-            <Pressable
+            <CircleButton
+                iconName='chevron-left'
+                size={BUTTON_SIZE}
                 onPress={onPrevious}
-                hitSlop={HIT_SLOP}
-                style={({pressed}) => [styles.iconButton, pressed && styles.pressed]}
+                accessibilityLabel={intl.formatMessage(messages.previous)}
                 testID='agenda.calendar.previous'
-                accessibilityRole='button'
-            >
-                <CompassIcon
-                    name='chevron-left'
-                    style={styles.icon}
-                />
-            </Pressable>
-            <Pressable
+            />
+            <View style={styles.gap}/>
+            <CircleButton
+                iconName='chevron-right'
+                size={BUTTON_SIZE}
                 onPress={onNext}
-                hitSlop={HIT_SLOP}
-                style={({pressed}) => [styles.iconButton, pressed && styles.pressed]}
+                accessibilityLabel={intl.formatMessage(messages.next)}
                 testID='agenda.calendar.next'
-                accessibilityRole='button'
-            >
-                <CompassIcon
-                    name='chevron-right'
-                    style={styles.icon}
-                />
-            </Pressable>
+            />
             <Pressable
                 onPress={onToday}
                 style={({pressed}) => [styles.chip, pressed && styles.pressed]}

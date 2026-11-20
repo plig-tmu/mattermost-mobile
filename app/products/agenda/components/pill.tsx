@@ -13,12 +13,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     pill: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 32,
-        borderRadius: 16,
+        height: 36,
+        borderRadius: 18,
         paddingHorizontal: 14,
         marginRight: 8,
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
         borderWidth: 1,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         maxWidth: 220,
     },
     selected: {
@@ -51,7 +52,7 @@ type Props<T extends string> = {
     testID?: string;
 };
 
-// Pill is the rounded filter chip used across Agenda (Slack-style filters).
+// Pill is the soft capsule filter chip of the Oxide design; the selected one uses the accent color.
 function Pill<T extends string>({value, label, selected, onPress, rightIcon, testID}: Props<T>) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);

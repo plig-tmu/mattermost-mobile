@@ -22,59 +22,73 @@ import Search from './search';
 
 import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
 
+const CAPSULE_HEIGHT = 64;
+
+// Oxide layout: the tabs sit in a floating capsule with the selected tab on a darker pill, and
+// Search is a separate round button next to it.
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        backgroundColor: theme.centerChannelBg,
-        alignContent: 'center',
-        flexDirection: 'row',
-        height: ViewConstants.BOTTOM_TAB_HEIGHT,
-        justifyContent: 'center',
-    },
     outerContainer: {
         backgroundColor: theme.centerChannelBg,
-        boxShadow: '0px -4px 4px rgba(61, 60, 64, 0.08)',
+    },
+    container: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: ViewConstants.BOTTOM_TAB_HEIGHT,
+        paddingHorizontal: 16,
+    },
+    capsule: {
+        flex: 1,
+        flexDirection: 'row',
+        height: CAPSULE_HEIGHT,
+        borderRadius: CAPSULE_HEIGHT / 2,
+        padding: 4,
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
+        borderWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
     item: {
-        alignItems: 'center',
         flex: 1,
+        alignItems: 'center',
         justifyContent: 'center',
+        borderRadius: (CAPSULE_HEIGHT - 8) / 2,
+    },
+    itemSelected: {
+        backgroundColor: theme.centerChannelBg,
+    },
+    search: {
+        width: CAPSULE_HEIGHT,
+        height: CAPSULE_HEIGHT,
+        borderRadius: CAPSULE_HEIGHT / 2,
+        marginLeft: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
+        borderWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+    },
+    searchSelected: {
+        backgroundColor: theme.centerChannelBg,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
     },
     pressed: {
         opacity: 0.72,
     },
-    separator: {
-        borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
-        borderTopWidth: 0.5,
-    },
-
-    // Slack-style tab: the selected icon sits on a tinted pill with a label underneath.
-    pill: {
-        width: 56,
-        height: 32,
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    pillSelected: {
-        backgroundColor: changeOpacity(theme.buttonBg, 0.12),
-    },
     label: {
-        marginTop: 2,
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 25, 'SemiBold'),
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+        ...typography('Body', 50, 'SemiBold'),
     },
     labelSelected: {
-        color: theme.buttonBg,
+        color: theme.centerChannelColor,
     },
 }));
 
 const labels = defineMessages({
     [Screens.CHANNEL_LIST]: {id: 'tab_bar.home', defaultMessage: 'Home'},
     [Screens.SEARCH]: {id: 'tab_bar.search', defaultMessage: 'Search'},
-    [Screens.MENTIONS]: {id: 'tab_bar.mentions', defaultMessage: 'Mentions'},
+    [Screens.MENTIONS]: {id: 'tab_bar.mentions', defaultMessage: 'Activity'},
     [Screens.SAVED_MESSAGES]: {id: 'tab_bar.saved', defaultMessage: 'Saved'},
     [Screens.AGENDA]: {id: 'tab_bar.agenda', defaultMessage: 'Agenda'},
-    [Screens.ACCOUNT]: {id: 'tab_bar.account', defaultMessage: 'Account'},
+    [Screens.ACCOUNT]: {id: 'tab_bar.account', defaultMessage: 'You'},
 });
 
 const TabComponents: Record<string, any> = {
@@ -148,78 +162,81 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         };
     }, [visible, safeareaInsets.bottom]);
 
+    const renderTab = (route: typeof tabs[number], index: number) => {
+        const {options} = descriptors[route.key];
+        const isFocused = focusedIndex === index;
+        const isSearch = route.name === Screens.SEARCH;
+
+        const onPress = () => {
+            const lastTab = state.history[state.history.length - 1];
+            const lastIndex = tabs.findIndex((r) => r.key === lastTab.key);
+            const direction = lastIndex < index ? 'right' : 'left';
+            const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+            });
+            DeviceEventEmitter.emit(NavigationConstants.TAB_PRESSED);
+            if (!isFocused && !event.defaultPrevented) {
+                // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                navigation.navigate({params: {direction}, name: route.name, merge: false});
+            }
+        };
+
+        const onLongPress = () => {
+            navigation.emit({
+                type: 'tabLongPress',
+                target: route.key,
+            });
+        };
+
+        // Route names match screen constants directly
+        const Component = TabComponents[route.name];
+        const label = route.name in labels ? intl.formatMessage(labels[route.name as keyof typeof labels]) : options.title;
+
+        return (
+            <Pressable
+                key={route.name}
+                accessibilityRole='button'
+                accessibilityState={isFocused ? {selected: true} : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
+                testID={options.tabBarButtonTestID}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                style={({pressed}) => (isSearch ? [style.search, isFocused && style.searchSelected, pressed && style.pressed] : [style.item, isFocused && style.itemSelected, pressed && style.pressed])}
+            >
+                {Component ? (
+                    <Component
+                        isFocused={isFocused}
+                        theme={theme}
+                    />
+                ) : null}
+                {!isSearch && (
+                    <Text
+                        style={[style.label, isFocused && style.labelSelected]}
+                        numberOfLines={1}
+                    >
+                        {label}
+                    </Text>
+                )}
+            </Pressable>
+        );
+    };
+
+    const searchIndex = tabs.findIndex((r) => r.name === Screens.SEARCH);
+
     return (
-        <SafeAreaView edges={['bottom']}>
-            <Animated.View style={style.outerContainer}>
-                <Animated.View style={[style.container, style.separator, animatedStyle]}>
-                    {tabs.map((route, index) => {
-                        const {options} = descriptors[route.key];
-
-                        const isFocused = focusedIndex === index;
-
-                        const onPress = () => {
-                            const lastTab = state.history[state.history.length - 1];
-                            const lastIndex = tabs.findIndex((r) => r.key === lastTab.key);
-                            const direction = lastIndex < index ? 'right' : 'left';
-                            const event = navigation.emit({
-                                type: 'tabPress',
-                                target: route.key,
-                                canPreventDefault: true,
-                            });
-                            DeviceEventEmitter.emit(NavigationConstants.TAB_PRESSED);
-                            if (!isFocused && !event.defaultPrevented) {
-                            // The `merge: true` option makes sure that the params inside the tab screen are preserved
-                                navigation.navigate({params: {direction}, name: route.name, merge: false});
-                            }
-                        };
-
-                        const onLongPress = () => {
-                            navigation.emit({
-                                type: 'tabLongPress',
-                                target: route.key,
-                            });
-                        };
-
-                        const renderOption = () => {
-                        // Route names now match screen constants directly
-                            const Component = TabComponents[route.name];
-                            const props = {isFocused, theme};
-                            if (Component) {
-                                return <Component {...props}/>;
-                            }
-
-                            return null;
-                        };
-
-                        const label = route.name in labels ? intl.formatMessage(labels[route.name as keyof typeof labels]) : options.title;
-
-                        return (
-                            <Pressable
-                                key={route.name}
-                                accessibilityRole='button'
-                                accessibilityState={isFocused ? {selected: true} : {}}
-                                accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
-                                testID={options.tabBarButtonTestID}
-                                onPress={onPress}
-                                onLongPress={onLongPress}
-                                style={({pressed}) => [style.item, pressed && style.pressed]}
-                            >
-                                <View style={[style.pill, isFocused && style.pillSelected]}>
-                                    {renderOption()}
-                                </View>
-                                <Text
-                                    style={[style.label, isFocused && style.labelSelected]}
-                                    numberOfLines={1}
-                                >
-                                    {label}
-                                </Text>
-                            </Pressable>
-                        );
-                    })}
-                </Animated.View>
+        <SafeAreaView
+            edges={['bottom']}
+            style={style.outerContainer}
+        >
+            <Animated.View style={[style.container, animatedStyle]}>
+                <View style={style.capsule}>
+                    {tabs.map((route, index) => (index === searchIndex ? null : renderTab(route, index)))}
+                </View>
+                {searchIndex >= 0 && renderTab(tabs[searchIndex], searchIndex)}
             </Animated.View>
         </SafeAreaView>
-
     );
 }
 

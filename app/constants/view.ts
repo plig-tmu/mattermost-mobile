@@ -3,7 +3,8 @@
 
 import {Platform} from 'react-native';
 
-export const BOTTOM_TAB_HEIGHT = 64;
+// Floating tab capsule (64) plus its bottom margin.
+export const BOTTOM_TAB_HEIGHT = 72;
 export const BOTTOM_TAB_ICON_SIZE = 31.2;
 export const BOTTOM_TAB_PROFILE_PHOTO_SIZE = 22;
 export const BOTTOM_TAB_STATUS_SIZE = 12;

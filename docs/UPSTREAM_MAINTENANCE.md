@@ -10,11 +10,10 @@ should only touch the small set of core files listed below.
 | `app/client/rest/index.ts` | import `ClientAgenda`, add it to the `Client` interface and mixin list | Low: lists change rarely, re-add one entry |
 | `app/constants/screens.ts` | import `AGENDA_SCREENS` and spread it into the screens object | Low |
 | `app/screens/home/tab_bar/index.tsx` | Agenda icon in `TabComponents`; tabs filtered with `useAgendaEnabled`; highlight and `isFocused` use the index among visible tabs (`focusedIndex`) | Medium: upstream edits the tab bar when it redesigns navigation |
-| `app/screens/home/tab_bar/index.tsx` (Slack-style restyle) | slider replaced by a tinted pill behind the selected icon, a localized label under every icon (`tab_bar.*` strings), `Pressable` instead of `TouchableOpacity` | Medium |
-| `app/constants/view.ts` | `BOTTOM_TAB_HEIGHT` 52 -> 64 to fit the labels | Low |
+| `app/screens/home/tab_bar/index.tsx` (Oxide restyle) | floating capsule with a darker pill behind the selected tab, a localized label under every icon (`tab_bar.*` strings), Search as a separate round button, `Pressable` instead of `TouchableOpacity` | Medium |
+| `app/screens/home/tab_bar/{home,mentions,search,saved_messages}.tsx` | focused icon color `centerChannelColor` instead of `buttonBg` | Low |
+| `app/constants/view.ts` | `BOTTOM_TAB_HEIGHT` 52 -> 72 (64 capsule plus margin) | Low |
 | `app/constants/screens.ts` | `AGENDA_SCREENS.AGENDA` added to `HOME_TAB_SCREENS` (tab path resolution) | Low |
-| `app/screens/home/channel_list/channel_list.tsx` | floating **New message** button (phones only) that opens Create Direct Message | Low |
-| `app/components/floating_action_button/` | new shared floating button used by Home and Agenda | None (new files) |
 | `app/routes/(authenticated)/(home)/_layout.tsx` | `Tabs.Screen` for `Screens.AGENDA` before Account | Low |
 | `app/routes/(authenticated)/(home)/agenda.tsx`, `app/routes/(authenticated)/agenda_*.tsx` (5 files) | new route wrappers | None (new files) |
 | `tsconfig.json`, `babel.config.js` | `@agenda` path alias | Low |

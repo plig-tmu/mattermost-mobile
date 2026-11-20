@@ -170,7 +170,7 @@ const Home = ({isFocused, theme}: Props) => {
             <CompassIcon
                 size={BOTTOM_TAB_ICON_SIZE}
                 name='home-variant-outline'
-                color={isFocused ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.48)}
+                color={isFocused ? theme.centerChannelColor : changeOpacity(theme.centerChannelColor, 0.72)}
             />
             <Badge
                 backgroundColor={theme.buttonBg}
