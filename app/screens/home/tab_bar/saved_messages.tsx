@@ -19,7 +19,7 @@ const SaveMessages = ({isFocused, theme}: Props) => {
             <CompassIcon
                 size={BOTTOM_TAB_ICON_SIZE}
                 name='bookmark-outline'
-                color={isFocused ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.48)}
+                color={isFocused ? theme.centerChannelColor : changeOpacity(theme.centerChannelColor, 0.72)}
             />
         </View>
     );
