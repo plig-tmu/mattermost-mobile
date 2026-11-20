@@ -3,19 +3,22 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessage, defineMessages, useIntl} from 'react-intl';
-import {Alert, View} from 'react-native';
+import {View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import ScopeBar from '@agenda/components/scope_bar';
+import FloatingActionButton from '@components/floating_action_button';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
-import {useDefaultHeaderHeight} from '@hooks/header';
+import {useHeaderHeight} from '@hooks/header';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
 import Tabs from '@hooks/use_tabs/tabs';
-import {navigateToScreen} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, navigateToScreen} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import CalendarView from './calendar_view';
@@ -37,8 +40,9 @@ const messages = defineMessages({
     create: {id: 'agenda.create', defaultMessage: 'Create'},
     newEvent: {id: 'agenda.create.event', defaultMessage: 'New event'},
     newTask: {id: 'agenda.create.task', defaultMessage: 'New task'},
-    cancel: {id: 'agenda.cancel', defaultMessage: 'Cancel'},
 });
+
+const SUBTITLE_DATE = {weekday: 'long', month: 'long', day: 'numeric'} as const;
 
 // The bottom tab bar owns the bottom inset; the header owns the top one.
 const EDGES: Edge[] = ['left', 'right'];
@@ -72,25 +76,36 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
     }, []);
 
     const intl = useIntl();
-    const headerHeight = useDefaultHeaderHeight();
+    const {largeHeight} = useHeaderHeight();
     useAndroidHomeTabBackHandler(Screens.AGENDA);
 
+    // New records start in the selected team or channel.
     const onCreate = useCallback(() => {
         const params = scope.kind === 'my' ? {} : {teamId: scope.teamId, channelId: scope.kind === 'channel' ? scope.channelId : undefined};
-        Alert.alert(intl.formatMessage(messages.create), undefined, [
-            {text: intl.formatMessage(messages.newEvent), onPress: () => navigateToScreen(Screens.AGENDA_EDIT_EVENT, params)},
-            {text: intl.formatMessage(messages.newTask), onPress: () => navigateToScreen(Screens.AGENDA_EDIT_TASK, params)},
-            {text: intl.formatMessage(messages.cancel), style: 'cancel'},
-        ]);
+        const create = (screen: typeof Screens.AGENDA_EDIT_EVENT | typeof Screens.AGENDA_EDIT_TASK) => async () => {
+            await dismissBottomSheet();
+            navigateToScreen(screen, params);
+        };
+        const renderContent = () => (
+            <View>
+                <SlideUpPanelItem
+                    leftIcon='calendar-outline'
+                    text={intl.formatMessage(messages.newEvent)}
+                    onPress={create(Screens.AGENDA_EDIT_EVENT)}
+                    testID='agenda.create.event'
+                />
+                <SlideUpPanelItem
+                    leftIcon='checkbox-marked-circle-outline'
+                    text={intl.formatMessage(messages.newTask)}
+                    onPress={create(Screens.AGENDA_EDIT_TASK)}
+                    testID='agenda.create.task'
+                />
+            </View>
+        );
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
     }, [intl, scope]);
 
-    const rightButtons = useMemo(() => [{
-        iconName: 'plus' as const,
-        onPress: onCreate,
-        accessibilityLabel: intl.formatMessage(messages.create),
-        testID: 'agenda.create',
-    }], [intl, onCreate]);
-    const contentStyle = useMemo(() => [styles.content, {marginTop: headerHeight}], [styles.content, headerHeight]);
+    const contentStyle = useMemo(() => [styles.content, {marginTop: largeHeight}], [styles.content, largeHeight]);
 
     const viewProps = {scope, onPressEvent, onPressTask, teammateNameDisplay};
 
@@ -101,9 +116,10 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
             testID='agenda.screen'
         >
             <NavigationHeader
+                isLargeTitle={true}
                 showBackButton={false}
                 title={intl.formatMessage(messages.title)}
-                rightButtons={rightButtons}
+                subtitle={intl.formatDate(Date.now(), SUBTITLE_DATE)}
             />
             <View style={contentStyle}>
                 <RoundedHeaderContext/>
@@ -116,6 +132,12 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
                 {tab === 'calendar' && <CalendarView {...viewProps}/>}
                 {tab === 'tasks' && <TasksView {...viewProps}/>}
                 {tab === 'list' && <ListView {...viewProps}/>}
+                <FloatingActionButton
+                    iconName='plus'
+                    onPress={onCreate}
+                    accessibilityLabel={intl.formatMessage(messages.create)}
+                    testID='agenda.create'
+                />
             </View>
         </SafeAreaView>
     );

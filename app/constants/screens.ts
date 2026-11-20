@@ -238,5 +238,6 @@ export const HOME_TAB_SCREENS = new Set<string>([
     SEARCH,
     MENTIONS,
     SAVED_MESSAGES,
+    AGENDA_SCREENS.AGENDA,
     ACCOUNT,
 ]);

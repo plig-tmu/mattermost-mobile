@@ -11,7 +11,7 @@ import {useAgendaRange} from '@agenda/hooks/use_agenda_range';
 import {addLocalDays, dateFromKey, startOfLocalDay} from '@agenda/utils/calendar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import {ListState, useToggleTask} from './list_state';
@@ -24,12 +24,13 @@ export const AGENDA_LIST_DAYS = 28;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {
         paddingHorizontal: 16,
-        paddingVertical: 6,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+        paddingTop: 16,
+        paddingBottom: 4,
+        backgroundColor: theme.centerChannelBg,
     },
     headerText: {
-        color: changeOpacity(theme.centerChannelColor, 0.72),
-        ...typography('Body', 75, 'SemiBold'),
+        color: theme.centerChannelColor,
+        ...typography('Heading', 200, 'SemiBold'),
     },
 }));
 

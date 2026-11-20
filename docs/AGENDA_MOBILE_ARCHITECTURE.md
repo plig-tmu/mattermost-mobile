@@ -176,7 +176,7 @@ app/products/agenda/
   hooks/                  use_agenda_request (keyed loader + stale-response guard),
                           use_agenda_range (events+tasks of visible days), use_agenda_names,
                           use_agenda_enabled
-  components/             agenda_tab_icon, calendar_grid (month and week), calendar_header,
+  components/             agenda_tab_icon, pill, calendar_grid (month and week), calendar_header,
                           agenda_item_row, scope_bar, detail_parts, form_parts
   screens/                agenda (calendar/tasks/list views), task_details, event_details,
                           edit_task, edit_event
@@ -185,9 +185,21 @@ app/products/agenda/
 Route files are thin wrappers, as for Playbooks: the tab is `app/routes/(authenticated)/(home)/agenda.tsx`;
 details and editors are stack routes `app/routes/(authenticated)/agenda_*.tsx`.
 
-The Agenda tab screen follows the other home tabs: a `NavigationHeader` with the title and a **+**
-button for creating an event or task, the rounded `RoundedHeaderContext` top edge, and
-`useAndroidHomeTabBackHandler` for the Android back button.
+### Slack-style shell
+
+The app shell and Agenda follow a Slack-like mobile layout. There is no design reference for
+"Mattermost Oxide" in the repo, so this is a best-effort interpretation:
+
+- **Bottom tabs** show a label under each icon (Home, Search, Activity, Saved, Agenda, You) and a
+  tinted pill behind the selected icon instead of the old sliding bar.
+- **Home** has a floating **New message** button (phones) that opens Create Direct Message.
+- **Agenda tab:** a large title header with today's date as the subtitle, the rounded
+  `RoundedHeaderContext` top edge, scope and task filters as pills (`components/pill.tsx`),
+  rows with a leading tile (event color, or the task's completion toggle), bold day headers in
+  the list, and a floating **+** that opens a bottom sheet (New event / New task).
+  `useAndroidHomeTabBackHandler` handles the Android back button.
+
+All colors come from the theme, so light, dark and custom themes apply.
 
 ### Core changes (kept minimal)
 1. `app/client/rest/index.ts`: add `ClientAgenda` to the mixin list.

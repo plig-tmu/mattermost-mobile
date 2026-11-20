@@ -19,7 +19,8 @@ export type AgendaItem =
     | {kind: 'event'; key: string; occurrence: EventOccurrence}
     | {kind: 'task'; key: string; occurrence: TaskOccurrence};
 
-const HIT_SLOP = {top: 10, bottom: 10, left: 10, right: 10};
+const HIT_SLOP = {top: 6, bottom: 6, left: 6, right: 6};
+const TILE_SIZE = 36;
 
 const PRIORITY_COLORS: Record<string, keyof Theme> = {
     urgent: 'errorTextColor',
@@ -30,23 +31,29 @@ const PRIORITY_COLORS: Record<string, keyof Theme> = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     row: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 10,
     },
-    bar: {
-        width: 4,
-        alignSelf: 'stretch',
-        borderRadius: 2,
+
+    // Slack-style leading tile: an event shows its color, a task tile is the completion toggle.
+    tile: {
+        width: TILE_SIZE,
+        height: TILE_SIZE,
+        borderRadius: 8,
         marginRight: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    checkbox: {
-        marginRight: 10,
-        paddingTop: 1,
+    taskTile: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+    },
+    taskTileDone: {
+        backgroundColor: changeOpacity(theme.onlineIndicator, 0.16),
     },
     checkboxIcon: {
         fontSize: 22,
-        color: changeOpacity(theme.centerChannelColor, 0.48),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     checkboxDone: {
         color: theme.onlineIndicator,
@@ -114,13 +121,20 @@ const AgendaItemRow = ({item, names, teammateNameDisplay, showDate = false, onPr
             event.location,
             scopeLabel(intl, event, names),
         ].filter(Boolean).join(' · ');
+        const color = event.color || theme.buttonBg;
         return (
             <Pressable
                 onPress={handlePress}
                 style={({pressed}) => [styles.row, pressed && styles.pressed]}
                 testID={`agenda.item.event.${event.id}`}
             >
-                <View style={[styles.bar, {backgroundColor: event.color || theme.buttonBg}]}/>
+                <View style={[styles.tile, {backgroundColor: changeOpacity(color, 0.16)}]}>
+                    <CompassIcon
+                        name='calendar-outline'
+                        size={20}
+                        color={color}
+                    />
+                </View>
                 <View style={styles.body}>
                     <Text
                         style={styles.title}
@@ -158,13 +172,13 @@ const AgendaItemRow = ({item, names, teammateNameDisplay, showDate = false, onPr
             <Pressable
                 onPress={handleToggle}
                 hitSlop={HIT_SLOP}
-                style={({pressed}) => [styles.checkbox, pressed && styles.pressed]}
+                style={({pressed}) => [styles.tile, styles.taskTile, done && styles.taskTileDone, pressed && styles.pressed]}
                 testID={`agenda.item.task.${task.id}.toggle`}
                 accessibilityRole='checkbox'
                 accessibilityState={{checked: done}}
             >
                 <CompassIcon
-                    name={done ? 'check-circle' : 'circle-outline'}
+                    name={done ? 'check' : 'circle-outline'}
                     style={[styles.checkboxIcon, done && styles.checkboxDone]}
                 />
             </Pressable>

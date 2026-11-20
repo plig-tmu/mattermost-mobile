@@ -3,17 +3,17 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessage, defineMessages, useIntl} from 'react-intl';
-import {FlatList, Pressable, RefreshControl, Text, View, type ListRenderItemInfo} from 'react-native';
+import {FlatList, RefreshControl, ScrollView, View, type ListRenderItemInfo} from 'react-native';
 
 import {fetchAgendaTasks, setAgendaTaskStatus, taskQueryForScope} from '@agenda/actions/remote';
 import AgendaItemRow, {type AgendaItem} from '@agenda/components/agenda_item_row';
+import Pill from '@agenda/components/pill';
 import {useAgendaNames} from '@agenda/hooks/use_agenda_names';
 import {mergeTask, scopeKey} from '@agenda/hooks/use_agenda_range';
 import {emitAgendaChanged, useAgendaRequest} from '@agenda/hooks/use_agenda_request';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {ListState, useToggleTask} from './list_state';
 
@@ -33,36 +33,14 @@ const messages = defineMessages({
     all: {id: 'agenda.tasks.filter.all', defaultMessage: 'All'},
 });
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const FILTERS_STYLE = {paddingHorizontal: 16, paddingVertical: 8};
+
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         flex: 1,
     },
     filters: {
-        flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-    },
-    chip: {
-        borderRadius: 16,
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        marginRight: 8,
-        borderWidth: 1,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-    },
-    chipSelected: {
-        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-        borderColor: theme.buttonBg,
-    },
-    chipText: {
-        color: changeOpacity(theme.centerChannelColor, 0.72),
-        ...typography('Body', 75, 'SemiBold'),
-    },
-    chipTextSelected: {
-        color: theme.buttonBg,
-    },
-    pressed: {
-        opacity: 0.72,
+        flexGrow: 0,
     },
 }));
 
@@ -125,17 +103,23 @@ const TasksView = ({scope, onPressEvent, onPressTask, teammateNameDisplay}: Prop
             style={styles.container}
             testID='agenda.tasks'
         >
-            <View style={styles.filters}>
+            <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                style={styles.filters}
+                contentContainerStyle={FILTERS_STYLE}
+            >
                 {FILTER_KEYS.map((key) => (
-                    <FilterChip
+                    <Pill<TaskFilter>
                         key={key}
-                        filter={key}
+                        value={key}
                         selected={filter === key}
                         label={intl.formatMessage(messages[key])}
-                        onSelect={setFilter}
+                        onPress={setFilter}
+                        testID={`agenda.tasks.filter.${key}`}
                     />
                 ))}
-            </View>
+            </ScrollView>
             <FlatList
                 data={items}
                 renderItem={renderItem}
@@ -158,29 +142,6 @@ const TasksView = ({scope, onPressEvent, onPressTask, teammateNameDisplay}: Prop
                 testID='agenda.tasks.list'
             />
         </View>
-    );
-};
-
-type ChipProps = {
-    filter: TaskFilter;
-    selected: boolean;
-    label: string;
-    onSelect: (filter: TaskFilter) => void;
-};
-
-const FilterChip = ({filter, selected, label, onSelect}: ChipProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-    const handlePress = useCallback(() => onSelect(filter), [filter, onSelect]);
-    return (
-        <Pressable
-            onPress={handlePress}
-            style={({pressed}) => [styles.chip, selected && styles.chipSelected, pressed && styles.pressed]}
-            testID={`agenda.tasks.filter.${filter}`}
-            accessibilityState={{selected}}
-        >
-            <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
-        </Pressable>
     );
 };
 

@@ -4,16 +4,14 @@
 import {useDatabase} from '@nozbe/watermelondb/react';
 import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Pressable, Text, View} from 'react-native';
+import {ScrollView} from 'react-native';
 
 import {getAgendaChannels, getAgendaNames, getAgendaTeams, type NamedOption} from '@agenda/queries';
-import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {navigateToScreen} from '@screens/navigation';
 import SettingsStore from '@store/settings_store';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+
+import Pill from './pill';
 
 import type {AgendaScope} from '@agenda/types';
 import type {Selection} from '@components/autocomplete_selector';
@@ -28,51 +26,7 @@ const messages = defineMessages({
 
 const KINDS = ['my', 'team', 'channel'] as const;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        paddingHorizontal: 16,
-        paddingTop: 8,
-    },
-    segments: {
-        flexDirection: 'row',
-        borderRadius: 4,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        padding: 2,
-    },
-    segment: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 6,
-        borderRadius: 4,
-    },
-    segmentSelected: {
-        backgroundColor: theme.centerChannelBg,
-    },
-    segmentText: {
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 100, 'SemiBold'),
-    },
-    segmentTextSelected: {
-        color: theme.centerChannelColor,
-    },
-    picker: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 8,
-    },
-    pickerText: {
-        flex: 1,
-        color: theme.buttonBg,
-        ...typography('Body', 100, 'SemiBold'),
-    },
-    pickerIcon: {
-        color: theme.buttonBg,
-        fontSize: 18,
-    },
-    pressed: {
-        opacity: 0.72,
-    },
-}));
+const CONTENT_STYLE = {paddingHorizontal: 16, paddingVertical: 8};
 
 type Props = {
     scope: AgendaScope;
@@ -98,16 +52,14 @@ function openSelector(title: string, options: NamedOption[], selected: string | 
 // ScopeBar switches between My, Team and Channel calendars. Teams and channels come from the
 // server database through the app's existing selection screen.
 const ScopeBar = ({scope, defaultTeamId, onChange}: Props) => {
-    const theme = useTheme();
     const intl = useIntl();
     const database = useDatabase();
-    const styles = getStyleSheet(theme);
     const [label, setLabel] = useState('');
 
     useEffect(() => {
         let cancelled = false;
+        setLabel('');
         if (scope.kind === 'my') {
-            setLabel('');
             return undefined;
         }
         const channelIds = scope.kind === 'channel' ? [scope.channelId] : [];
@@ -116,7 +68,7 @@ const ScopeBar = ({scope, defaultTeamId, onChange}: Props) => {
                 return;
             }
             const team = names.teams[scope.teamId]?.displayName ?? '';
-            setLabel(scope.kind === 'channel' ? `${team} / ~${names.channels[scope.channelId]?.displayName ?? ''}` : team);
+            setLabel(scope.kind === 'channel' ? `~${names.channels[scope.channelId]?.displayName ?? ''}` : team);
         });
         return () => {
             cancelled = true;
@@ -151,8 +103,12 @@ const ScopeBar = ({scope, defaultTeamId, onChange}: Props) => {
         }
     }, [pickChannel, pickTeam, scope]);
 
+    // Tapping the selected Team or Channel pill re-opens its picker.
     const selectKind = useCallback((kind: typeof KINDS[number]) => {
         if (kind === scope.kind) {
+            if (kind !== 'my') {
+                openPicker();
+            }
             return;
         }
         const teamId = scope.kind === 'my' ? defaultTeamId : scope.teamId;
@@ -163,67 +119,31 @@ const ScopeBar = ({scope, defaultTeamId, onChange}: Props) => {
         } else {
             pickChannel(teamId);
         }
-    }, [defaultTeamId, onChange, pickChannel, scope]);
+    }, [defaultTeamId, onChange, openPicker, pickChannel, scope]);
 
     return (
-        <View style={styles.container}>
-            <View
-                style={styles.segments}
-                accessibilityRole='tablist'
-            >
-                {KINDS.map((kind) => (
-                    <Segment
-                        key={kind}
-                        kind={kind}
-                        selected={scope.kind === kind}
-                        label={intl.formatMessage(messages[kind])}
-                        onSelect={selectKind}
-                    />
-                ))}
-            </View>
-            {scope.kind !== 'my' && (
-                <Pressable
-                    onPress={openPicker}
-                    style={({pressed}) => [styles.picker, pressed && styles.pressed]}
-                    testID='agenda.scope.picker'
-                >
-                    <Text
-                        style={styles.pickerText}
-                        numberOfLines={1}
-                    >
-                        {label}
-                    </Text>
-                    <CompassIcon
-                        name='chevron-down'
-                        style={styles.pickerIcon}
-                    />
-                </Pressable>
-            )}
-        </View>
-    );
-};
-
-type SegmentProps = {
-    kind: typeof KINDS[number];
-    selected: boolean;
-    label: string;
-    onSelect: (kind: typeof KINDS[number]) => void;
-};
-
-const Segment = ({kind, selected, label, onSelect}: SegmentProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-    const handlePress = useCallback(() => onSelect(kind), [kind, onSelect]);
-    return (
-        <Pressable
-            onPress={handlePress}
-            style={({pressed}) => [styles.segment, selected && styles.segmentSelected, pressed && styles.pressed]}
-            testID={`agenda.scope.${kind}`}
-            accessibilityRole='tab'
-            accessibilityState={{selected}}
+        <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={CONTENT_STYLE}
+            accessibilityRole='tablist'
+            testID='agenda.scope'
         >
-            <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{label}</Text>
-        </Pressable>
+            {KINDS.map((kind) => {
+                const selected = scope.kind === kind;
+                return (
+                    <Pill
+                        key={kind}
+                        value={kind}
+                        selected={selected}
+                        label={selected && label ? label : intl.formatMessage(messages[kind])}
+                        rightIcon={kind === 'my' ? undefined : 'chevron-down'}
+                        onPress={selectKind}
+                        testID={`agenda.scope.${kind}`}
+                    />
+                );
+            })}
+        </ScrollView>
     );
 };
 
