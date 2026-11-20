@@ -2,17 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {defineMessage} from 'react-intl';
-import {View} from 'react-native';
+import {defineMessage, defineMessages, useIntl} from 'react-intl';
+import {Alert, Pressable, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import ScopeBar from '@agenda/components/scope_bar';
+import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
 import Tabs from '@hooks/use_tabs/tabs';
 import {navigateToScreen} from '@screens/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CalendarView from './calendar_view';
 import ListView from './list_view';
@@ -28,6 +29,15 @@ const TABS: Array<TabDefinition<AgendaTab>> = [
     {id: 'list', name: defineMessage({id: 'agenda.tab.list', defaultMessage: 'Agenda'})},
 ];
 
+const messages = defineMessages({
+    create: {id: 'agenda.create', defaultMessage: 'Create'},
+    newEvent: {id: 'agenda.create.event', defaultMessage: 'New event'},
+    newTask: {id: 'agenda.create.task', defaultMessage: 'New task'},
+    cancel: {id: 'agenda.cancel', defaultMessage: 'Cancel'},
+});
+
+const HIT_SLOP = {top: 8, bottom: 8, left: 8, right: 8};
+
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -37,6 +47,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     tabs: {
         flexDirection: 'row',
+        alignItems: 'center',
+        paddingRight: 16,
+    },
+    createIcon: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        fontSize: 24,
+    },
+    pressed: {
+        opacity: 0.72,
     },
 }));
 
@@ -58,6 +77,16 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
         navigateToScreen(Screens.AGENDA_TASK, {taskId});
     }, []);
 
+    const intl = useIntl();
+    const onCreate = useCallback(() => {
+        const params = scope.kind === 'my' ? {} : {teamId: scope.teamId, channelId: scope.kind === 'channel' ? scope.channelId : undefined};
+        Alert.alert(intl.formatMessage(messages.create), undefined, [
+            {text: intl.formatMessage(messages.newEvent), onPress: () => navigateToScreen(Screens.AGENDA_EDIT_EVENT, params)},
+            {text: intl.formatMessage(messages.newTask), onPress: () => navigateToScreen(Screens.AGENDA_EDIT_TASK, params)},
+            {text: intl.formatMessage(messages.cancel), style: 'cancel'},
+        ]);
+    }, [intl, scope]);
+
     const viewProps = {scope, onPressEvent, onPressTask, teammateNameDisplay};
 
     return (
@@ -73,6 +102,19 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
             />
             <View style={styles.tabs}>
                 <Tabs {...tabsProps}/>
+                <Pressable
+                    onPress={onCreate}
+                    hitSlop={HIT_SLOP}
+                    style={({pressed}) => pressed && styles.pressed}
+                    accessibilityRole='button'
+                    accessibilityLabel={intl.formatMessage(messages.create)}
+                    testID='agenda.create'
+                >
+                    <CompassIcon
+                        name='plus'
+                        style={styles.createIcon}
+                    />
+                </Pressable>
             </View>
             {tab === 'calendar' && <CalendarView {...viewProps}/>}
             {tab === 'tasks' && <TasksView {...viewProps}/>}
