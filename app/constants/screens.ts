@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {AGENDA_SCREENS} from '@agenda/constants';
 import AGENTS_SCREENS from '@agents/constants/screens';
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
@@ -177,6 +178,7 @@ export default {
     SHOW_TRANSLATION,
     ...PLAYBOOKS_SCREENS,
     ...AGENTS_SCREENS,
+    ...AGENDA_SCREENS,
 } as const;
 
 export const MODAL_SCREENS = new Set<string>([

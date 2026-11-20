@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import ClientAgenda, {type ClientAgendaMix} from '@agenda/client/rest';
 import ClientAgents, {type ClientAgentsMix} from '@agents/client/rest';
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
@@ -35,6 +36,7 @@ import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
 interface Client extends ClientBase,
     ClientAccessControlMix,
+    ClientAgendaMix,
     ClientAgentsMix,
     ClientAppsMix,
     ClientCategoriesMix,
@@ -66,6 +68,7 @@ interface Client extends ClientBase,
 
 class Client extends mix(ClientBase).with(
     ClientAccessControl,
+    ClientAgenda,
     ClientAgents,
     ClientApps,
     ClientCategories,
