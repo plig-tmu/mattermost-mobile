@@ -1,18 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-
-import {observeCurrentTeamId} from '@queries/servers/system';
-import {observeTeammateNameDisplay} from '@queries/servers/user';
+import {withAgendaUser} from '@agenda/screens/with_agenda_user';
 
 import Agenda from './agenda';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentTeamId: observeCurrentTeamId(database),
-    teammateNameDisplay: observeTeammateNameDisplay(database),
-}));
-
-export default withDatabase(enhanced(Agenda));
+export default withAgendaUser(Agenda);
