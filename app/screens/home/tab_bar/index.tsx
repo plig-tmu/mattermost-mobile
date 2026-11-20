@@ -71,10 +71,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const labels = defineMessages({
     [Screens.CHANNEL_LIST]: {id: 'tab_bar.home', defaultMessage: 'Home'},
     [Screens.SEARCH]: {id: 'tab_bar.search', defaultMessage: 'Search'},
-    [Screens.MENTIONS]: {id: 'tab_bar.mentions', defaultMessage: 'Activity'},
+    [Screens.MENTIONS]: {id: 'tab_bar.mentions', defaultMessage: 'Mentions'},
     [Screens.SAVED_MESSAGES]: {id: 'tab_bar.saved', defaultMessage: 'Saved'},
     [Screens.AGENDA]: {id: 'tab_bar.agenda', defaultMessage: 'Agenda'},
-    [Screens.ACCOUNT]: {id: 'tab_bar.account', defaultMessage: 'You'},
+    [Screens.ACCOUNT]: {id: 'tab_bar.account', defaultMessage: 'Account'},
 });
 
 const TabComponents: Record<string, any> = {

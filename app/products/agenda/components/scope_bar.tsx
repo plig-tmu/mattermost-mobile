@@ -28,6 +28,9 @@ const KINDS = ['my', 'team', 'channel'] as const;
 
 const CONTENT_STYLE = {paddingHorizontal: 16, paddingVertical: 8};
 
+// A horizontal ScrollView grows vertically by default; keep it at the pills' height.
+const SCROLL_STYLE = {flexGrow: 0};
+
 type Props = {
     scope: AgendaScope;
     defaultTeamId: string;
@@ -125,6 +128,7 @@ const ScopeBar = ({scope, defaultTeamId, onChange}: Props) => {
         <ScrollView
             horizontal={true}
             showsHorizontalScrollIndicator={false}
+            style={SCROLL_STYLE}
             contentContainerStyle={CONTENT_STYLE}
             accessibilityRole='tablist'
             testID='agenda.scope'

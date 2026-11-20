@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useIsFocused} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessage, defineMessages, useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import ScopeBar from '@agenda/components/scope_bar';
+import {emitAgendaChanged} from '@agenda/hooks/use_agenda_request';
 import FloatingActionButton from '@components/floating_action_button';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -14,6 +16,7 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
+import useDidUpdate from '@hooks/did_update';
 import {useHeaderHeight} from '@hooks/header';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
 import Tabs from '@hooks/use_tabs/tabs';
@@ -78,6 +81,15 @@ const Agenda = ({currentTeamId, teammateNameDisplay}: Props) => {
     const intl = useIntl();
     const {largeHeight} = useHeaderHeight();
     useAndroidHomeTabBackHandler(Screens.AGENDA);
+
+    // The tab stays mounted (frozen) while hidden; refetch when the user comes back so changes
+    // made on the web or by teammates show up.
+    const isFocused = useIsFocused();
+    useDidUpdate(() => {
+        if (isFocused) {
+            emitAgendaChanged();
+        }
+    }, [isFocused]);
 
     // New records start in the selected team or channel.
     const onCreate = useCallback(() => {

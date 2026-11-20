@@ -6,6 +6,7 @@ import {Pressable} from 'react-native';
 
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -41,10 +42,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const FloatingActionButton = ({iconName, onPress, accessibilityLabel, testID}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const handlePress = usePreventDoubleTap(onPress);
 
     return (
         <Pressable
-            onPress={onPress}
+            onPress={handlePress}
             style={({pressed}) => [styles.button, pressed && styles.pressed]}
             accessibilityRole='button'
             accessibilityLabel={accessibilityLabel}
