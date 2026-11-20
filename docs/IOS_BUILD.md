@@ -45,18 +45,35 @@ container. These appear in `Info.plist` (`CFBundleIdentifier` and `AppGroupIdent
 are literal values, not `$(PRODUCT_BUNDLE_IDENTIFIER)`), in the `.entitlements` files and in
 `project.pbxproj`.
 
-**Recommended: the repository's Fastlane lane** updates all of them at once:
+**Recommended: the repository's Fastlane lane** `ios update_settings` rewrites all of them
+(Info.plist values, `project.pbxproj`, entitlements, App Group, iCloud container, keychain group
+and, optionally, the team). Fastlane has its own Gemfile in `fastlane/`, separate from the root
+one that `npm run ios-gems` installs:
 
 ```bash
 cd fastlane
+bundle install                 # fastlane + plugins from fastlane/Pluginfile
 MAIN_APP_IDENTIFIER=com.example.mattermost \
 EXTENSION_APP_IDENTIFIER=com.example.mattermost.MattermostShare \
 NOTIFICATION_SERVICE_IDENTIFIER=com.example.mattermost.NotificationService \
 IOS_APP_GROUP=group.com.example.mattermost \
 IOS_ICLOUD_CONTAINER=iCloud.com.example.mattermost \
+FASTLANE_TEAM_ID=<your 10-character Apple team ID> \
 APP_NAME="Mattermost Agenda" \
 bundle exec fastlane ios update_settings
 ```
+
+Notes from reading the lane (it was **not run** in this environment, which has no macOS):
+
+- In `project.pbxproj` the lane first replaces every `com.mattermost.rnbeta` with
+  `MAIN_APP_IDENTIFIER`, so the extension IDs there always become
+  `<MAIN_APP_IDENTIFIER>.MattermostShare` and `<MAIN_APP_IDENTIFIER>.NotificationService`. Set
+  `EXTENSION_APP_IDENTIFIER` and `NOTIFICATION_SERVICE_IDENTIFIER` to exactly those values, as
+  above, so the Info.plist and project settings agree.
+- `FASTLANE_TEAM_ID` is optional; without it, pick the team in Xcode (§4).
+- Leave `INTUNE_ENABLED` unset.
+- The lane runs locally without Apple credentials. `CI=true` would trigger `setup_ci`.
+- Check the result with `git diff ios/` before building.
 
 Don't commit these local signing changes if you want to keep merging from upstream easily (see
 `docs/UPSTREAM_MAINTENANCE.md`). Keep them on a local branch, or re-run the lane after each

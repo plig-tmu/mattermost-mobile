@@ -109,7 +109,9 @@ Agenda data is not persisted. Each list keeps its last result in React state und
 after a newer request has started is dropped (sequence guard). The native network client has no
 abort, so this guard replaces request cancellation. Switching servers remounts the whole
 authenticated tree, so no rows from another server can appear. Plugin detection is cached in
-memory per server URL.
+memory per server URL. Only a positive or negative answer is cached; if the manifest request
+fails (for example offline at startup), the Agenda row stays hidden until the channel list
+mounts again (server switch or app restart), and detection is retried then.
 
 ## Verification
 

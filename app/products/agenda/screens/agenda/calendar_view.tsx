@@ -3,7 +3,7 @@
 
 import moment from 'moment-timezone';
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {FlatList, RefreshControl, View, type ListRenderItemInfo} from 'react-native';
 
 import AgendaItemRow, {type AgendaItem} from '@agenda/components/agenda_item_row';
@@ -147,7 +147,7 @@ const CalendarView = ({scope, onPressEvent, onPressTask, teammateNameDisplay}: P
                         loading={loading}
                         error={error}
                         onRetry={refresh}
-                        emptyMessage={{id: 'agenda.calendar.empty_day', defaultMessage: 'Nothing scheduled for this day'}}
+                        emptyMessage={defineMessage({id: 'agenda.calendar.empty_day', defaultMessage: 'Nothing scheduled for this day'})}
                     />
                 }
                 testID='agenda.calendar.day_list'

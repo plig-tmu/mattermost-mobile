@@ -3,7 +3,7 @@
 
 import moment from 'moment-timezone';
 import React, {useCallback, useMemo} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {defineMessage, defineMessages, useIntl} from 'react-intl';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
@@ -97,7 +97,7 @@ const EventDetails = ({eventId, occurrenceStart, currentUserId, teammateNameDisp
                     loading={loading}
                     error={error}
                     onRetry={refresh}
-                    emptyMessage={{id: 'agenda.event.not_found', defaultMessage: 'Event not found'}}
+                    emptyMessage={defineMessage({id: 'agenda.event.not_found', defaultMessage: 'Event not found'})}
                 />
             </SafeAreaView>
         );

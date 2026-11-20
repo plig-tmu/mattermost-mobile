@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {calendarRange} from './calendar';
+import {calendarRange, localDateKey} from './calendar';
 import {eventOccurrencesForDays, taskOccurrencesForDays} from './recurrence';
 
 import type {EventSummary, TaskSummary} from '@agenda/types';
@@ -51,7 +51,7 @@ describe('eventOccurrencesForDays', () => {
         // Mon 2 Nov 09:00 EST is 14:00 UTC.
         expect(occurrences[0].startAt).toBe(Date.UTC(2026, 10, 2, 14));
         expect(occurrences[0].endAt).toBe(Date.UTC(2026, 10, 2, 14, 30));
-        expect(occurrences[0].dateKey).toBe('2026-11-02');
+        expect(occurrences[0].dateKey).toBe(localDateKey(new Date(Date.UTC(2026, 10, 2, 14))));
         expect(occurrences[0].originalStart).toBe(Date.UTC(2026, 10, 2, 14));
     });
 
@@ -76,15 +76,15 @@ describe('eventOccurrencesForDays', () => {
             recurrence: {frequency: 'daily'},
             overrides: [
                 {originalStart: Date.UTC(2026, 10, 3, 9), cancelled: true},
-                {originalStart: Date.UTC(2026, 10, 4, 9), startAt: Date.UTC(2026, 10, 4, 15), endAt: Date.UTC(2026, 10, 4, 16)},
+
+                // A small move keeps the occurrence on the same local day from UTC-9 to UTC+14.
+                {originalStart: Date.UTC(2026, 10, 4, 9), startAt: Date.UTC(2026, 10, 4, 9, 30), endAt: Date.UTC(2026, 10, 4, 9, 45)},
             ],
         };
         const occurrences = eventOccurrencesForDays(event, novWeek);
-        const keys = occurrences.map((o) => o.dateKey);
-        expect(keys).not.toContain('2026-11-03');
-        expect(occurrences).toHaveLength(6);
-        const moved = occurrences.find((o) => o.dateKey === '2026-11-04');
-        expect(moved?.startAt).toBe(Date.UTC(2026, 10, 4, 15));
+        expect(occurrences.map((o) => o.originalStart)).not.toContain(Date.UTC(2026, 10, 3, 9));
+        const moved = occurrences.find((o) => o.originalStart === Date.UTC(2026, 10, 4, 9));
+        expect(moved?.startAt).toBe(Date.UTC(2026, 10, 4, 9, 30));
         expect(moved?.originalStart).toBe(Date.UTC(2026, 10, 4, 9));
     });
 

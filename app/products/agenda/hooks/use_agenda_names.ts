@@ -11,11 +11,11 @@ import {logDebug} from '@utils/log';
 
 const EMPTY: AgendaNames = {teams: {}, channels: {}, users: {}};
 
-type Record = {teamId: string; channelId?: string; assigneeIds: string[]; creatorId?: string};
+type NamedRecord = {teamId: string; channelId?: string; assigneeIds: string[]; creatorId?: string};
 
 // useAgendaNames resolves team, channel and user labels from the server database, fetching
 // only user profiles the database does not have yet.
-export function useAgendaNames(serverUrl: string, records: Record[]): AgendaNames {
+export function useAgendaNames(serverUrl: string, records: NamedRecord[]): AgendaNames {
     const database = useDatabase();
     const [names, setNames] = useState<AgendaNames>(EMPTY);
 

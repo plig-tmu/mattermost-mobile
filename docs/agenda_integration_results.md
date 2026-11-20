@@ -77,3 +77,22 @@ There were no mismatches. These details matter for the mobile client:
 ## Reproduction scripts
 
 The scripts are kept outside the repo, in the session scratchpad: `setup.sh` (users, team, channels, plugin install) and `checks.sh` (all of the checks above).
+
+## Mobile client URLs replayed
+
+The query strings produced by `ClientAgendaMix` (captured from the real mixin in Jest, for the
+November 2026 month grid) were sent to the same server as user A with only the Bearer and
+`X-Requested-With` headers. Every one returned 200.
+
+| Request (ids redacted) | Status | Items |
+|---|---|---|
+| `/events?scope=my&from=…&to=…&include_recurring=true` | 200 | 2 |
+| `/tasks?scope=my&has_due=true&include_recurring=true&due_after=…&due_before=…&sort=due&direction=asc` | 200 | 0 |
+| `/tasks?scope=my&status=todo%2Cin_progress&sort=due&direction=asc` | 200 | 1 |
+| `/events?scope=team&team_id=<id>&…` (Team and Channel calendars) | 200 | 2 |
+| `/tasks?scope=team&team_id=<id>&has_due=true&…` | 200 | 1 |
+| `/tasks?scope=team&team_id=<id>&status=todo%2Cin_progress&…` | 200 | 3 |
+| `/tasks?scope=channel&channel_id=<private channel>&has_due=true&…` | 200 | 0 |
+| `/tasks?scope=channel&channel_id=<private channel>&status=todo%2Cin_progress&…` | 200 | 1 |
+
+All requests also carried `&page=0&per_page=100`. The test environment was torn down after the run.

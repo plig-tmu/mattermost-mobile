@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Platform, Pressable, Switch, Text, TextInput, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 export const getFormStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -200,6 +200,7 @@ export const DateField = ({value, mode, onChange, testID}: DateFieldProps) => {
                 mode={mode}
                 display='compact'
                 onChange={handleChange}
+                themeVariant={getKeyboardAppearanceFromTheme(theme)}
                 accentColor={theme.buttonBg}
                 testID={testID}
             />
@@ -222,6 +223,7 @@ export const DateField = ({value, mode, onChange, testID}: DateFieldProps) => {
                     value={value}
                     mode={mode}
                     onChange={handleChange}
+                    themeVariant={getKeyboardAppearanceFromTheme(theme)}
                 />
             )}
         </>

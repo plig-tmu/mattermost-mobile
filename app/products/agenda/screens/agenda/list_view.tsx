@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {RefreshControl, SectionList, Text, View, type SectionListRenderItemInfo} from 'react-native';
 
 import AgendaItemRow, {type AgendaItem} from '@agenda/components/agenda_item_row';
@@ -103,7 +103,7 @@ const ListView = ({scope, onPressEvent, onPressTask, teammateNameDisplay}: Props
                     loading={loading}
                     error={error}
                     onRetry={refresh}
-                    emptyMessage={{id: 'agenda.list.empty', defaultMessage: 'Nothing scheduled in the next four weeks'}}
+                    emptyMessage={defineMessage({id: 'agenda.list.empty', defaultMessage: 'Nothing scheduled in the next four weeks'})}
                 />
             }
             testID='agenda.list'

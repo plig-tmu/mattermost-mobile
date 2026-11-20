@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {defineMessage, defineMessages, useIntl} from 'react-intl';
 import {FlatList, Pressable, RefreshControl, Text, View, type ListRenderItemInfo} from 'react-native';
 
 import {fetchAgendaTasks, setAgendaTaskStatus, taskQueryForScope} from '@agenda/actions/remote';
@@ -152,7 +152,7 @@ const TasksView = ({scope, onPressEvent, onPressTask, teammateNameDisplay}: Prop
                         loading={loading}
                         error={error}
                         onRetry={refresh}
-                        emptyMessage={{id: 'agenda.tasks.empty', defaultMessage: 'No tasks'}}
+                        emptyMessage={defineMessage({id: 'agenda.tasks.empty', defaultMessage: 'No tasks'})}
                     />
                 }
                 testID='agenda.tasks.list'

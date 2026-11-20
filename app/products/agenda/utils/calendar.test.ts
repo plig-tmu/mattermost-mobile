@@ -33,7 +33,7 @@ describe('agenda calendar utils', () => {
 
     it('should read date-only due dates in UTC and timed ones in local time', () => {
         expect(dueDateKey({dueAt: Date.UTC(2026, 10, 20)})).toBe('2026-11-20');
-        expect(dueDateKey({dueAt: Date.UTC(2026, 10, 20, 23, 30), dueHasTime: true})).toBe('2026-11-20');
+        expect(dueDateKey({dueAt: new Date(2026, 10, 20, 23, 30).getTime(), dueHasTime: true})).toBe('2026-11-20');
         expect(dueDateKey({dueAt: 0})).toBeUndefined();
     });
 });

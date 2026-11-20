@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {defineMessage, defineMessages, useIntl} from 'react-intl';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
@@ -131,7 +131,7 @@ const TaskDetails = ({taskId, currentUserId, teammateNameDisplay}: Props) => {
                     loading={loading}
                     error={error}
                     onRetry={refresh}
-                    emptyMessage={{id: 'agenda.task.not_found', defaultMessage: 'Task not found'}}
+                    emptyMessage={defineMessage({id: 'agenda.task.not_found', defaultMessage: 'Task not found'})}
                 />
             </SafeAreaView>
         );
